@@ -1,0 +1,24 @@
+{
+  "name": "ascroller",
+  "version": "1.0.0",
+  "description": "a scroller for mobile webapp",
+  "main": "index.js",
+  "scripts": {
+    "test": "null"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/AlexBai1991/aScroller.git"
+  },
+  "keywords": [
+    "mobile",
+    "webapp",
+    "scroller"
+  ],
+  "author": "Alex Bai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlexBai1991/aScroller/issues"
+  },
+  "homepage": "https://github.com/AlexBai1991/aScroller#readme"
+}
