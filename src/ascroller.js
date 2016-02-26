@@ -1,14 +1,10 @@
 var AScroller = (function (win, doc, undefined) {
 	function extend (target, source, isOverwrite) {
-		isOverwrite = typeof isOverwrite == 'undefined' ? true : isOverwrite;
+		isOverwrite = typeof isOverwrite == 'undefined' ? false : isOverwrite;
 		for (var key in source) {
 			var value = source[key];
-			if (isOverwrite) {
+			if (isOverwrite || !(key in target)) {
 				target[key] = value;
-			} else {
-				if (!(key in target)) {
-					target[key] = value;
-				}
 			}
 		}
 		return target;
@@ -31,7 +27,7 @@ var AScroller = (function (win, doc, undefined) {
 			opts = element || {};
 			element = null;
 		}
-		this.opts = extend(opts, defaultOpts, true);
+		this.opts = extend(opts, defaultOpts);
 		this.element = element || opts.element;
 		if (!this.element) throw new Error('need arguments: element here.');
 		if (typeof this.element === 'string') this.element = doc.querySelector(this.element);
@@ -55,16 +51,20 @@ var AScroller = (function (win, doc, undefined) {
 		_handleStart: function (e) {
 			this.isTouching = true;
 			this.touchstartY = this._getPage(e, 'pageY');
+			this.lastMovingY = this.touchstartY;
 			this.con.style.webkitTransitionDuration = '0';
 		},
 		_handleMove: function (e) {
 			_supportTouch && e.preventDefault();
 			if (this.isTouching) {
-				var moveY = this._getPage(e, 'pageY'),
-					distanceY = moveY - this.touchstartY;
+				var nowY = this._getPage(e, 'pageY'),
+					distanceY = nowY - this.touchstartY;
+				this.speedY = nowY - this.lastMovingY;
+				this.lastMovingY = nowY;
 				this.newTranslateY = this.translateY + distanceY;
-				if (this._overRange(this.newTranslateY)) {
-					// this.newTranslateY = this._limitY(this.newTranslateY);
+				// handle isEase:false
+				if (!this.opts.isEase) {
+					this.newTranslateY = this._limitY(this.newTranslateY);
 				}
 				this.con.style.webkitTransform = this._getTranslateY(this.newTranslateY);
 			}
@@ -74,11 +74,13 @@ var AScroller = (function (win, doc, undefined) {
 			this.isTouching = false;
 			this.translateY = this.newTranslateY;
 			this.con.style.webkitTransitionDuration = '500ms';
-			if (this._overRange(this.translateY)) {
-				console.log(111);
-				console.log(this._limitY(this.translateY));
-				this.translateY = this._limitY(this.translateY);
-				this.con.style.webkitTransform = 'translate3d(0, '+ this.translateY +'px, 0)';
+			// handle isEase:true
+			if (this.opts.isEase) {
+				// handle overrange
+				if (this._overRange(this.translateY)) {
+					this.translateY = this._limitY(this.translateY);
+					this.con.style.webkitTransform = this._getTranslateY(this.translateY);
+				} 
 			}
 		},
 		_getPage: function (event, attr) {
